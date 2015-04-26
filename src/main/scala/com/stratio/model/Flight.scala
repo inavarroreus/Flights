@@ -53,14 +53,51 @@ object Flight{
   * Create a new Flight Class from a CSV file
   *
   */
-  def apply(fields: Array[String]): Flight = ???
+  //"1987,13,14,3,741,730,912,849,PS,1451,NA,91,79,NA,23,12,SAN,SFO,447,NA,NA,0,NA,0,NA,NA,NA,NA,NA"
+  def apply(fields: Array[String]): Flight = Flight(
+    ParserUtils.getDateTime( fields(0).toInt, fields(1).toInt, fields(2).toInt),
+    fields(4).toInt,
+    fields(5).toInt,
+    fields(6).toInt,
+    fields(7).toInt,
+    fields(8),
+    fields(9).toInt,
+    fields(11).toInt,
+    fields(12).toInt,
+    fields(14).toInt,
+    fields(15).toInt,
+    fields(16),
+    fields(17),
+    fields(18).toInt,
+    parseCancelled(fields(22)),
+    0, //TODO
+    Delays( parseCancelled(fields(24)),
+            parseCancelled(fields(25)),
+            parseCancelled(fields(26)),
+            parseCancelled(fields(27)),
+            parseCancelled(fields(28)))
+  )
 
   /*
    *
    * Extract the different types of errors in a string list
    *
    */
-  def extractErrors(fields: Array[String]): Seq[String] = ???
+  def extractErrors(fields: Array[String]): Seq[String] = Seq(
+    parsers.isInt(fields(0)),
+    parsers.isMonthNumber(fields(1)),
+    parsers.isDayNumber(fields(2)),
+    parsers.isInt(fields(4)),
+    parsers.isInt(fields(5)),
+    parsers.isInt(fields(6)),
+    parsers.isInt(fields(7)),
+    parsers.isInt(fields(9)),
+    parsers.isInt(fields(11)),
+    parsers.isInt(fields(12)),
+    parsers.isInt(fields(14)),
+    parsers.isInt(fields(15)),
+    parsers.isInt(fields(18))
+  ).filter( _ != "")
 
   /*
   *
@@ -69,5 +106,48 @@ object Flight{
   *   if field == 0 -> OnTime
   *   if field <> 0 && field<>1 -> Unknown
   */
-  def parseCancelled(field: String): Cancelled = ???
+  def parseCancelled(field: String): Cancelled = field match {
+    case "1" => Cancel
+    case "0" => OnTime
+    case _ => Unknown
+  }
 }
+
+object parsers {
+  def isInt(s: String): String = try {
+    s.toInt
+    ""
+  } catch {
+    case _: java.lang.NumberFormatException => "NAN"
+  }
+
+  def isMonthNumber(s: String): String = try {
+    if(s.toInt <= 12 && s.toInt > 0)
+      ""
+    else
+      "Invalid date"
+  }catch{
+    case _ : java.lang.NumberFormatException => "NAN"
+  }
+
+  def isDayNumber(s : String): String = try {
+    if(s.toInt <= 31 && s.toInt > 0)
+      ""
+    else
+      "Invad date"
+  }catch {
+    case _ : java.lang.NumberFormatException => "NAN"
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
